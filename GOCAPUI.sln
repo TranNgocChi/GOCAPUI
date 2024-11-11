@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34714.143
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GOCAPUI", "GOCAPUI\GOCAPUI.csproj", "{4BA9C8E2-21E4-4277-B2F0-BFCA91EABB30}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4BA9C8E2-21E4-4277-B2F0-BFCA91EABB30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BA9C8E2-21E4-4277-B2F0-BFCA91EABB30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BA9C8E2-21E4-4277-B2F0-BFCA91EABB30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BA9C8E2-21E4-4277-B2F0-BFCA91EABB30}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DF933BE1-56BE-4A41-8815-D42E18144259}
+	EndGlobalSection
+EndGlobal
