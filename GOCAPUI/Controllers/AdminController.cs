@@ -106,7 +106,7 @@ namespace GOCAPUI.Controllers
                 return NotFound();
             }
 
-            HttpResponseMessage response = await client.GetAsync($"{PostApiUrl}/{id}?$expand=Medias");
+            HttpResponseMessage response = await client.GetAsync($"{PostApiUrl}/{id}");
             if (response.IsSuccessStatusCode)
             {
                 string strData = await response.Content.ReadAsStringAsync();
@@ -156,14 +156,14 @@ namespace GOCAPUI.Controllers
 
         public async Task<IEnumerable<PostModel>> GetAllPost()
         {
-            HttpResponseMessage response = await client.GetAsync($"{PostApiUrl}?$expand=Medias");
+            HttpResponseMessage response = await client.GetAsync($"{PostApiUrl}");
             string strData = await response.Content.ReadAsStringAsync();
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
-            var jsonResponse = JsonSerializer.Deserialize<PostResponse>(strData, options);
-            IEnumerable<PostModel> a = jsonResponse.Value;
+            IEnumerable<PostModel> a = JsonSerializer.Deserialize<IEnumerable<PostModel>>(strData, options);
+            
 
             return a;
         }
