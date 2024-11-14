@@ -4,7 +4,25 @@
     ViewData["Title"] = "IndexPost";
     Layout = "_LayoutAdmin";
 }
+<style>
+    .image-container {
+        width: 50px; /* Chiều rộng cố định */
+        height: 50px; /* Chiều cao cố định */
+        overflow: hidden; /* Ẩn phần hình ảnh vượt quá kích thước */
+        display: flex; /* Sử dụng flexbox để căn chỉnh hình ảnh */
+        justify-content: center; /* Canh giữa hình ảnh */
+        align-items: center; /* Canh giữa dọc */
+        border-radius: 8px; /* Tùy chọn: bo góc hình vuông */
+        background-color: #f0f0f0; /* Tùy chọn: màu nền nếu không có hình ảnh */
+        margin: 5px; /* Thêm khoảng cách giữa các hình ảnh */
+    }
 
+        .image-container img {
+            width: auto; /* Để chiều rộng tự động */
+            height: 100%; /* Đặt chiều cao 100% */
+            object-fit: cover; /* Đảm bảo hình ảnh được cắt theo tỷ lệ mà không bị méo */
+        }
+</style>
 
 
 <p>
@@ -59,7 +77,9 @@
                         @foreach (var item1 in item.Medias)
                         {
                             <div class="col-sm-2">
-                                <img src="@item1.Url" alt="Image" style="max-width: 100%; height: auto;" />
+                                <div class="image-container">
+                                    <img src="@item1.Url" alt="Image" />
+                                </div>
                             </div>
                         }
                     </div>
