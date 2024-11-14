@@ -1,5 +1,5 @@
 ﻿@model IEnumerable<GOCAPUI.Models.DTO.Post.PostModel>
-
+@using GOCAPUI.Models.DTO.Post
 @{
     ViewData["Title"] = "IndexPost";
     Layout = "_LayoutAdmin";
@@ -78,7 +78,17 @@
                         {
                             <div class="col-sm-2">
                                 <div class="image-container">
-                                    <img src="@item1.Url" alt="Image" />
+                                    @if (item1.Type.Equals("Image"))
+                                    {
+                                        <img src="@item1.Url" alt="Image" class="img-fluid" />
+                                    }
+                                    else if (item1.Type.Equals("Video"))
+                                    {
+                                        <video controls class="img-fluid">
+                                            <source src="@item1.Url" type="video/mp4" /> <!-- Thay đổi type nếu cần -->
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    }
                                 </div>
                             </div>
                         }
