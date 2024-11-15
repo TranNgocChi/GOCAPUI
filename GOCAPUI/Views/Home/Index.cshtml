@@ -1,8 +1,704 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using GOCAPUI.Models.DTO
+@{
+    Layout = null;
 }
+@model PostsJwt
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (Model.JwtToken == null || Model.JwtToken == String.Empty)
+{
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GoSocial</title>
+    <!-- import css  -->
+    <link rel="stylesheet" href="~/css/index.css" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">GoSocial</div>
+            <ul class="menu">
+                <li class="menu-item active">Dành cho bạn</li>
+                <li class="menu-item">Khám phá <span class="new">Mới</span></li>
+                <li class="menu-item">Đang Follow</li>
+                <li class="menu-item">LIVE</li>
+                <li class="menu-item">Hồ sơ</li>
+            </ul>
+            <p class="login-prompt">
+                Đăng nhập để follow các tác giả, thích video và xem bình luận.
+            </p>
+            <button class="login-button" id="sidebar-login-btn">Đăng nhập</button>
+            <div class="footer">
+                <p>Công ty</p>
+                <p>Chương trình</p>
+                <p>Điều khoản và chính sách</p>
+                <p>&copy; 2024 TikTok</p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="search-area">
+                    <input type="text" placeholder="Tìm kiếm..." class="search-input" />
+                </div>
+                <button class="login-btn" id="header-login-btn">Đăng nhập</button>
+            </div>
+
+            @foreach (var post in Model.PostDisplays)
+            {
+                <div class="video-side">
+                    <!-- Video Section -->
+                    <div class="video-section">
+                        <div class="video-container">
+                            @foreach(var media in post.Medias)
+                            {
+                                @if (media.Type == MediaType.Video)
+                                {
+                                    <video src="@media.Url"
+                                           class="video"
+                                           autoplay
+                                           muted
+                                           loop></video>
+                                }
+                                else if (media.Type == MediaType.Image)
+                                {
+                                    <img src="@media.Url" style="display: block; margin: 0 auto; max-width: 100%; height: auto;" />
+
+                                }
+                                
+                                <div class="video-info">
+                                    <p class="video-author">@post.User.Name • 2 ngày trước</p>
+                                    <p class="video-caption">@post.Content </p>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="actions">
+                            <div class="action-item">
+                                <img src="./img/jackngu.png"
+                                     class="profile-pic"
+                                     alt="User Profile" />
+                            </div>
+                            <div class="action-item">
+                                <button class="like-button">
+                                    <i class="fa-solid fa-heart like"></i>
+                                </button>
+                                <p>795.8K</p>
+                            </div>
+
+                            <div class="action-item">
+                                <button class="like-button">
+                                    <i class="fa-solid fa-comment like"></i>
+                                </button>
+                                <p>5457</p>
+                            </div>
+                            <div class="action-item">
+                                <button class="like-button">
+                                    <i class="fa-solid fa-bookmark like"></i>
+                                </button>
+                                <p>31.1K</p>
+                            </div>
+                            <div class="action-item">
+                                <button class="like-button">
+                                    <i class="fa-solid fa-share like"></i>
+                                </button>
+                                <p>15K</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br />
+
+            }
+            
+        </div>
+
+        <!-- Form Login Modal -->
+        <div id="login-modal" class="login-modal">
+            <div class="login-content">
+                <h2>Đăng nhập vào GoSocial</h2>
+                <form id="login-form">
+                    <button class="button-option">
+                        <a href="https://www.facebook.com/v10.0/dialog/oauth?client_id=1259288345202083&redirect_uri=https://localhost:7035/signin/facebook-response&response_type=code&scope=email,public_profile"><i class="fab fa-facebook"></i>Tiếp tục với Facebook</a>
+                    </button>
+                    <button class="button-option">
+                        <a href="https://accounts.google.com/o/oauth2/auth?client_id=192713002905-t0n84r06cfn8seolr6u78os85jf276sq.apps.googleusercontent.com&redirect_uri=https://localhost:7035/signin/google-response&response_type=code&scope=openid%20email%20profile&access_type=offline&prompt=consent"><i class="fab fa-google"></i>Tiếp tục với Google</a>
+                    </button>
+
+                    <p>
+                        Bằng việc tiếp tục với tài khoản có vị trí tại Việt Nam, bạn đồng
+                        ý với Điều khoản dịch vụ, đồng thời xác nhận rằng bạn đã đọc Chính
+                        sách quyền riêng tư của chúng tôi.
+                    </p>
+                    <br />
+                    <p>
+                        Bạn không có tài khoản? <a class="font-color-register">Đăng ký</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- import javascript  -->
+    <script src="~/js/app.js"></script>
+</body>
+</html>
+}
+else{
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>GoSocial</title>
+        <!-- import css  -->
+        <link rel="stylesheet" href="./css/loginsuccess.css" />
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+    </head>
+    <body>
+        <div class="app-container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="logo">GoSocial</div>
+                <ul class="menu">
+                    <li class="menu-item active">Dành cho bạn</li>
+                    <li class="menu-item">Khám phá <span class="new">Mới</span></li>
+                    <li class="menu-item">Đang Follow</li>
+                    <li class="menu-item">LIVE</li>
+                    <li class="menu-item">Bạn bè</li>
+                    <li class="menu-item">Hồ sơ</li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Header -->
+                <div class="header">
+                    <div class="search-area">
+                        <input type="text" placeholder="Tìm kiếm..." class="search-input" />
+                    </div>
+                    <!-- Add the Tải lên button -->
+                    <button class="upload-button">Tải lên</button>
+                    <div class="action-item" onclick="togglePopup()">
+                        <img src="@Model.User.Picture"
+                             class="profile-pic"
+                             alt="User Profile" />
+                    </div>
+                </div>
+
+                <!-- Pop-up menu -->
+                <div id="profile-popup" class="profile-popup">
+                    <ul>
+                        <li><i class="fa fa-user"></i> Xem hồ sơ</li>
+                        <li><i class="fa fa-sign-out-alt"></i> Đăng xuất</li>
+                    </ul>
+                </div>
+
+                @foreach (var post in Model.PostDisplays)
+                {
+                    <div class="video-side">
+                        <!-- Video Section -->
+                        <div class="video-section">
+                            <div class="video-container">
+                                @foreach (var media in post.Medias)
+                                {
+                                    @if (media.Type == MediaType.Video)
+                                    {
+                                        <video src="@media.Url"
+                                               class="video"
+                                               autoplay
+                                               muted
+                                               loop></video>
+                                    }
+                                    else if (media.Type == MediaType.Image)
+                                    {
+                                        <img src="@media.Url" style="display: block; margin: 0 auto; max-width: 100%; height: auto;" />
+
+                                    }
+
+                                    <div class="video-info">
+                                        <p class="video-author">@post.User.Name • 2 ngày trước</p>
+                                        <p class="video-caption">@post.Content </p>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="actions">
+                                <div class="action-item">
+                                    <img src="@Model.User.Picture"
+                                         class="profile-pic"
+                                         alt="User Profile" />
+                                </div>
+                                <div class="action-item">
+                                    <button class="like-button">
+                                        <i class="fa-solid fa-heart like"></i>
+                                    </button>
+                                    <p>795.8K</p>
+                                </div>
+
+                                <div class="action-item">
+                                    <button class="like-button">
+                                        <i class="fa-solid fa-comment like"></i>
+                                    </button>
+                                    <p>5457</p>
+                                </div>
+                                <div class="action-item">
+                                    <button class="like-button">
+                                        <i class="fa-solid fa-bookmark like"></i>
+                                    </button>
+                                    <p>31.1K</p>
+                                </div>
+                                <div class="action-item">
+                                    <button class="like-button">
+                                        <i class="fa-solid fa-share like"></i>
+                                    </button>
+                                    <p>15K</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+
+                }
+            </div>
+
+            <!-- Form Login Modal -->
+            <div id="login-modal" class="login-modal">
+                <div class="login-content">
+                    <h2>Đăng nhập vào GoSocial</h2>
+                    <form id="login-form">
+                        <button class="button-option">
+                            <a><i class="fab fa-facebook"></i>Tiếp tục với Facebook</a>
+                        </button>
+                        <button class="button-option">
+                            <a><i class="fab fa-google"></i>Tiếp tục với Google</a>
+                        </button>
+
+                        <p>
+                            Bằng việc tiếp tục với tài khoản có vị trí tại Việt Nam, bạn đồng
+                            ý với Điều khoản dịch vụ, đồng thời xác nhận rằng bạn đã đọc Chính
+                            sách quyền riêng tư của chúng tôi.
+                        </p>
+                        <br />
+                        <p>
+                            Bạn không có tài khoản? <a class="font-color-register">Đăng ký</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- import javascript  -->
+        <script src="./js/loginsuccess.js"></script>
+    </body>
+    </html>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #121212;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            align-items: flex-start;
+        }
+
+        .logo {
+            font-size: 40px;
+            color: #fff;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .menu {
+            list-style: none;
+        }
+
+        .menu-item.active,
+        .menu-item:hover {
+            color: #ff3b3b;
+        }
+
+        .new {
+            background-color: #ff3b3b;
+            color: #fff;
+            padding: 2px 5px;
+            font-size: 12px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        .login-prompt {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .login-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            border: 1px solid #ff3b3b;
+            background: none;
+            color: #ff3b3b;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .footer {
+            margin-top: auto;
+            font-size: 12px;
+            color: #777;
+            text-align: left;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            background-color: #121212;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background-color: #121212;
+        }
+
+        .search-input {
+            margin-left: 400px;
+            flex: 1;
+            padding: 12px 25px; /* Adjust padding for a more spacious look */
+            font-size: 18px; /* Increased font size */
+            color: #fff;
+            background-color: #333; /* Darker background color */
+            border: none;
+            border-radius: 30px; /* Rounded corners */
+            margin-right: 15px;
+            outline: none; /* Remove outline when focused */
+            width: 800px; /* Adjust width to match the style */
+        }
+
+            .search-input::placeholder {
+                color: #bbb; /* Lighter color for placeholder text */
+            }
+
+        .search-area {
+            width: 1500px;
+        }
+
+        .search-input:focus {
+            background-color: #444; /* Slightly lighter background when focused */
+            border-radius: 30px; /* Ensures round corners are maintained */
+        }
+
+        .login-btn {
+            padding: 10px 20px;
+            background-color: #ff3b3b;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Video Side */
+        .video-side {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 20px 0;
+            overflow: hidden;
+        }
+
+        /* Video Section */
+        .video-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 400px;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 20px;
+        }
+
+        .video-container {
+            width: 100%;
+        }
+
+        .video {
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+        }
+
+        .video-info {
+            padding: 10px;
+            font-size: 14px;
+            color: #ccc;
+            text-align: left;
+        }
+
+        .video-author,
+        .video-caption,
+        .video-sound {
+            margin-bottom: 5px;
+        }
+
+        .actions {
+            position: absolute;
+            right: -80px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .action-item {
+            text-align: center;
+        }
+
+            .action-item button {
+                font-size: 24px;
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: #fff;
+            }
+
+            .action-item p {
+                font-size: 14px;
+                color: #fff;
+            }
+
+        /* Base styling for the like button */
+        .like {
+            color: #fff; /* Default color */
+        }
+
+        /* Change color on hover */
+        .like-button:hover .like {
+            color: red; /* Change icon color to red */
+        }
+
+        /* LOGIN FORM */
+        .login-modal {
+            display: none; /* Changed to display block for showing the modal */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-content {
+            background-color: #121212;
+            padding: 40px;
+            border-radius: 10px;
+            width: 500px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 40px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 30px;
+        }
+
+        button.button-option {
+            background-color: #333;
+            color: #fff;
+            font-size: 24px;
+            padding: 12px 25px;
+            margin-bottom: 12px;
+            border-radius: 5px;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+            button.button-option i {
+                margin-right: 10px;
+            }
+
+            button.button-option:hover {
+                background-color: #ff3b3b;
+            }
+
+        .login-prompt {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 20px;
+        }
+
+        .login-button {
+            padding: 10px 20px;
+            background: none;
+            color: #ff3b3b;
+            border: 1px solid #ff3b3b;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+            .login-button:hover {
+                background-color: #ff3b3b;
+                color: white;
+                border: none;
+            }
+
+        .font-color-register {
+            color: #ff3b3b;
+            cursor: pointer;
+        }
+
+            .font-color-register:hover {
+                text-decoration: underline;
+            }
+
+        .upload-button {
+            width: 20%;
+            padding: 10px 20px;
+            margin-right: 50px;
+            background-color: #ff3b3b;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+
+            .upload-button:hover {
+                background-color: #ff6666;
+            }
+
+        /* Adjustments to align profile and "Các tài khoản đã follow" */
+        .menu-item {
+            padding: 15px 0;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ff3b3b;
+            cursor: pointer;
+            margin-right: 10px; /* Space between image and text */
+        }
+
+        /* Profile picture styling */
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Popup menu styling */
+        .profile-popup {
+            display: none; /* Initially hidden */
+            position: absolute;
+            top: 70px; /* Adjust based on the position of profile picture */
+            right: 20px;
+            background-color: #333;
+            border-radius: 8px;
+            padding: 10px;
+            width: 200px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+            .profile-popup ul {
+                list-style: none;
+                padding: 0;
+                margin-top: 0;
+            }
+
+            .profile-popup li {
+                padding: 20px;
+                font-size: 16px;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+
+                .profile-popup li:hover {
+                    background-color: #444;
+                }
+
+                .profile-popup li i {
+                    margin-right: 10px;
+                }
+    </style>
+    <script>
+        // JavaScript to toggle the profile popup
+        function togglePopup() {
+            const popup = document.getElementById("profile-popup");
+            popup.style.display =
+                popup.style.display === "none" || popup.style.display === ""
+                    ? "block"
+                    : "none";
+        }
+
+        // Close the popup if clicked outside
+        document.addEventListener("click", function (event) {
+            const popup = document.getElementById("profile-popup");
+            const profilePic = document.querySelector(".action-item");
+
+            if (!popup.contains(event.target) && !profilePic.contains(event.target)) {
+                popup.style.display = "none";
+            }
+        });
+    </script>
+}
