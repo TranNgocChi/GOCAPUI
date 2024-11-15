@@ -53,12 +53,12 @@ namespace GOCAPUI.Controllers
             IEnumerable<UserModel> b = await GetAllUser();
             ViewBag.Users = b;
 
-          
             return View(a);
         }
         public async Task<IActionResult> CreatePost()
         {
-           
+            IEnumerable<UserModel> b = await GetAllUser();
+            ViewBag.UserId = new SelectList(b, "Id", "Name");
             return View();
         }
         [HttpPost]

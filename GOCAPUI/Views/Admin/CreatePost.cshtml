@@ -90,13 +90,17 @@
 
         <div class="form-group">
             <label asp-for="UserId" class="control-label"></label>
-            <input asp-for="UserId" class="form-control" />
+            <select asp-for="UserId" class="form-control" asp-items="ViewBag.UserId"></select>
             <span asp-validation-for="UserId" class="text-danger"></span>
         </div>
 
+       
+
         <div class="form-group">
             <label asp-for="MediaFiles">Upload Media Files:</label>
-            <input type="file" id="MediaFiles" asp-for="MediaFiles" multiple accept="image/*,video/*"  class="form-control" />
+            <input type="file" id="MediaFiles" asp-for="MediaFiles" multiple accept="image/*,video/*" class="form-control" onchange="validateFiles()" />
+            <small id="validationMessage" class="text-danger"></small>
+            <span asp-validation-for="MediaFiles" class="text-danger"></span>
         </div>
 
         <div class="form-group">
@@ -108,6 +112,39 @@
 <div>
     <a class="back-link" asp-action="IndexPost">Back to List</a>
 </div>
+<script>
+    function validateFiles() {
+        const input = document.getElementById('MediaFiles');
+        const files = input.files;
+        const validationMessage = document.getElementById('validationMessage');
+
+       
+
+        let imageCount = 0;
+        let videoCount = 0;
+
+        // Đếm số lượng tệp hình ảnh và video
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file.type.startsWith('image/')) {
+                imageCount++;
+            } else if (file.type.startsWith('video/')) {
+                videoCount++;
+            }
+        }
+
+        // Xác thực số lượng tệp hình ảnh và video
+        if (imageCount > 5) {
+            validationMessage.textContent = 'Bạn chỉ có thể tải lên tối đa 5 tệp hình ảnh.';
+            input.value = ''; // Xóa trường nhập
+        } else if (videoCount > 1) {
+            validationMessage.textContent = 'Bạn chỉ có thể tải lên 1 tệp video.';
+            input.value = ''; // Xóa trường nhập
+        } else {
+            validationMessage.textContent = ''; // Xóa thông báo xác thực
+        }
+    }
+</script>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
