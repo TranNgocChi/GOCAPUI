@@ -1,52 +1,41 @@
-﻿using GOCAPUI.Models.DTO.Post;
-using GOCAPUI.Models.DTO.User;
-using GOCAPUI.Models.ResponseJson;
+﻿using GOCAPUI.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections.Generic;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using System.Net.Http;
+using System.Net.Http.Json;
 
 namespace GOCAPUI.Controllers
 {
+    [Route("admin")]
     public class AdminController : Controller
     {
-        private readonly HttpClient client = null;
-        private string PostApiUrl = "";
-        private string UserApiUrl = "";
-        public AdminController()
-        {
-            client = new HttpClient();
-            var contentType = new MediaTypeWithQualityHeaderValue("application/json");
-            client.DefaultRequestHeaders.Accept.Add(contentType);
-            PostApiUrl = "https://localhost:7035/posts";
-            UserApiUrl = "https://localhost:7035/users";
-        }
-        public async Task<IActionResult> Index()
-        {
-           
-            IEnumerable<PostModel> a = await GetAllPost();
-            int? count = a.Count();
-            IEnumerable<UserModel> b = await GetAllUser();
-            int? countUser = b.Count();
-            if (count != null)
-            {
-                ViewBag.PostCount = count; 
-                                                
-            }
-            if (countUser != null)
-            {
-                ViewBag.UserCount = countUser;
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<AdminController> _logger;
 
-            }
+        public AdminController(IHttpClientFactory httpClientFactory, ILogger<AdminController> logger)
+        {
+            _httpClient = httpClientFactory.CreateClient();
+            _httpClient.BaseAddress = new Uri("https://localhost:7182/odata/");
+            _logger = logger;
+        }
+
+        // Trang Admin chính (Index)
+        [HttpGet]
+        public IActionResult Index()
+        {
             return View();
         }
 
-        // ======================== CRUD POST =================================
-        public async Task<IActionResult> IndexPost()
+        // Trang User (IndexUser)
+        [HttpGet("IndexUser")]
+        public IActionResult IndexUser()
         {
+            return View();
+        }
+
+        // API lấy tất cả người dùng
+        [HttpGet("users/data")]
+        public async Task<IActionResult> GetAllUsers()
             
             IEnumerable<PostModel> a = await GetAllPost();
 
@@ -66,11 +55,14 @@ namespace GOCAPUI.Controllers
       
         public async Task<IActionResult> CreatePost([Bind("Content,UserId,MediaFiles")] PostCreationModel postCreation)
         {
-            if (ModelState.IsValid)
+            try
             {
-                // Tạo nội dung multipart form-data
-                using (var content = new MultipartFormDataContent())
+                var response = await _httpClient.GetFromJsonAsync<IEnumerable<UserDTO>>("users");
+
+                if (response == null)
                 {
+                    _logger.LogWarning("No users found.");
+                    return NotFound("Không tìm thấy người dùng nào.");
                     // Thêm các trường văn bản
                     content.Add(new StringContent(postCreation.Content ?? string.Empty), "Content");
                     content.Add(new StringContent(postCreation.UserId.ToString()), "UserId");
@@ -117,9 +109,14 @@ namespace GOCAPUI.Controllers
                         return RedirectToAction(nameof(IndexPost));
                     }
                 }
-            }
 
-            return NoContent();
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching users.");
+                return StatusCode(500, $"Lỗi máy chủ nội bộ: {ex.Message}");
+            }
         }
 
         public async Task<IActionResult> DetailPost(Guid? id)
@@ -129,67 +126,139 @@ namespace GOCAPUI.Controllers
                 return NotFound();
             }
 
-            HttpResponseMessage response = await client.GetAsync($"{PostApiUrl}/{id}?$expand=Medias");
-            if (response.IsSuccessStatusCode)
+        // API lấy thông tin người dùng theo ID
+        [HttpGet("users/{id}")]
+        public async Task<IActionResult> GetUserById(Guid id)
+        {
+            try
             {
-                string strData = await response.Content.ReadAsStringAsync();
-                var options = new JsonSerializerOptions
+                var response = await _httpClient.GetFromJsonAsync<UserDTO>($"users/{id}");
+
+                if (response == null)
                 {
-                    PropertyNameCaseInsensitive = true
-                };
-                var product = JsonSerializer.Deserialize<PostModel>(strData, options);
+                    _logger.LogWarning($"User with ID {id} not found.");
+                    return NotFound($"Không tìm thấy người dùng với ID {id}.");
+                }
 
-                IEnumerable<UserModel> b = await GetAllUser();
-                ViewBag.Users = b;
-
-                return View(product);
+                return Ok(response);
             }
-            return NotFound();
-        }
-      
-
-        public async Task<IActionResult> DeletePost(Guid? id)
-        {
-            if (id == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                _logger.LogError(ex, $"Error fetching user with ID {id}.");
+                return StatusCode(500, $"Lỗi máy chủ nội bộ: {ex.Message}");
             }
-            var response = await client.DeleteAsync($"{PostApiUrl}/{id}");
-            if (response.IsSuccessStatusCode)
-            {
-                return RedirectToAction(nameof(IndexPost));
-            }
-            return NotFound();
-        }
-        //==========================================================================
-        public async Task<IEnumerable<UserModel>> GetAllUser()
-        {
-            HttpResponseMessage response = await client.GetAsync(UserApiUrl);
-            string strData = await response.Content.ReadAsStringAsync();
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            var jsonResponse = JsonSerializer.Deserialize<UserRespose>(strData, options);
-            IEnumerable<UserModel> a = jsonResponse.Value;
-
-
-            return a;
         }
 
-        public async Task<IEnumerable<PostModel>> GetAllPost()
+        // API tạo người dùng mới
+        [HttpPost("users")]
+        public async Task<IActionResult> CreateUser([FromBody] UserCreationDTO model)
         {
-            HttpResponseMessage response = await client.GetAsync($"{PostApiUrl}?$expand=Medias");
-            string strData = await response.Content.ReadAsStringAsync();
-            var options = new JsonSerializerOptions
+            if (!ModelState.IsValid)
             {
+                return BadRequest("Dữ liệu không hợp lệ.");
+            }
+
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("users", model);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var createdUser = await response.Content.ReadFromJsonAsync<UserDTO>();
+                    return CreatedAtAction(nameof(GetUserById), new { id = createdUser?.Id }, createdUser);
+                }
+
+                _logger.LogWarning("Unable to create user.");
+                return BadRequest("Không thể tạo người dùng.");
+            }
+            catch (Exception ex)
+            {
+<<<<<<< HEAD
+                _logger.LogError(ex, "Error creating user.");
+                return StatusCode(500, $"Lỗi máy chủ nội bộ: {ex.Message}");
+            }
+=======
                 PropertyNameCaseInsensitive = true
             };
             var jsonResponse = JsonSerializer.Deserialize<PostResponse>(strData, options);
             IEnumerable<PostModel> a = jsonResponse.Value;
             return a;
+>>>>>>> 6685573664c01ae968c4e0c0a0dd2ba79759dd18
         }
 
-        //=========================================================================
+        // API cập nhật thông tin người dùng
+        [HttpPatch("users/{id}")]
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserCreationDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Dữ liệu không hợp lệ.");
+            }
+
+            try
+            {
+                var response = await _httpClient.PatchAsJsonAsync($"users/{id}", model);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var updatedUser = await response.Content.ReadFromJsonAsync<UserDTO>();
+                    return Ok(updatedUser);
+                }
+
+                _logger.LogWarning("Unable to update user.");
+                return BadRequest("Không thể cập nhật người dùng.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating user with ID {id}.");
+                return StatusCode(500, $"Lỗi máy chủ nội bộ: {ex.Message}");
+            }
+        }
+
+        // API xóa người dùng
+        [HttpDelete("users/{id}")]
+        public async Task<IActionResult> DeleteUser(Guid id)
+        {
+            try
+            {
+                var response = await _httpClient.DeleteAsync($"users/{id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return NoContent();
+                }
+
+                _logger.LogWarning("Unable to delete user.");
+                return BadRequest("Không thể xóa người dùng.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting user with ID {id}.");
+                return StatusCode(500, $"Lỗi máy chủ nội bộ: {ex.Message}");
+            }
+        }
+
+        // API để hiển thị trang người dùng (IndexUser)
+        [HttpGet("users")]
+        public async Task<IActionResult> DisplayUsers()
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<IEnumerable<UserDTO>>("users");
+
+                if (response == null)
+                {
+                    _logger.LogWarning("No users found.");
+                    return NotFound("Không tìm thấy người dùng nào.");
+                }
+
+                return View(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error displaying users.");
+                return StatusCode(500, $"Lỗi máy chủ nội bộ: {ex.Message}");
+            }
+        }
     }
 }
