@@ -36,6 +36,24 @@ namespace GOCAPUI.Controllers
         // API lấy tất cả người dùng
         [HttpGet("users/data")]
         public async Task<IActionResult> GetAllUsers()
+            
+            IEnumerable<PostModel> a = await GetAllPost();
+
+            IEnumerable<UserModel> b = await GetAllUser();
+            ViewBag.Users = b;
+
+            return View(a);
+        }
+        public async Task<IActionResult> CreatePost()
+        {
+            IEnumerable<UserModel> b = await GetAllUser();
+            ViewBag.UserId = new SelectList(b, "Id", "Name");
+            return View();
+        }
+        [HttpPost]
+        [RequestSizeLimit(104857600)]
+      
+        public async Task<IActionResult> CreatePost([Bind("Content,UserId,MediaFiles")] PostCreationModel postCreation)
         {
             try
             {
@@ -45,6 +63,51 @@ namespace GOCAPUI.Controllers
                 {
                     _logger.LogWarning("No users found.");
                     return NotFound("Không tìm thấy người dùng nào.");
+                    // Thêm các trường văn bản
+                    content.Add(new StringContent(postCreation.Content ?? string.Empty), "Content");
+                    content.Add(new StringContent(postCreation.UserId.ToString()), "UserId");
+
+                    // Kiểm tra và thêm các tệp
+                    if (postCreation.MediaFiles != null && postCreation.MediaFiles.Any())
+                    {
+                        foreach (var file in postCreation.MediaFiles)
+                        {
+                            if (file.Length > 0)
+                            {
+                                var stream = file.OpenReadStream();
+                                var fileContent = new StreamContent(stream);
+                                fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+
+                                // Kiểm tra loại tệp
+                                if (file.ContentType.StartsWith("video/"))
+                                {
+                                    // Xử lý tệp video
+                                    content.Add(fileContent, "MediaFiles", file.FileName);
+                                    Console.WriteLine($"Tệp video đã được thêm: {file.FileName}");
+                                }
+                                else if (file.ContentType.StartsWith("image/"))
+                                {
+                                    // Xử lý tệp hình ảnh
+                                    content.Add(fileContent, "MediaFiles", file.FileName);
+                                    Console.WriteLine($"Tệp hình ảnh đã được thêm: {file.FileName}");
+                                }
+                                else
+                                {
+                                    // Nếu loại tệp không phải là video hoặc hình ảnh
+                                    Console.WriteLine($"Loại tệp không hỗ trợ: {file.FileName}");
+                                    ModelState.AddModelError("MediaFiles", "Chỉ hỗ trợ tải lên hình ảnh và video.");
+                                    return View(postCreation); // Hoặc xử lý phù hợp
+                                }
+                            }
+                        }
+                    }
+
+                    // Gửi yêu cầu POST
+                    var response = await client.PostAsync(PostApiUrl, content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return RedirectToAction(nameof(IndexPost));
+                    }
                 }
 
                 return Ok(response);
@@ -55,6 +118,13 @@ namespace GOCAPUI.Controllers
                 return StatusCode(500, $"Lỗi máy chủ nội bộ: {ex.Message}");
             }
         }
+
+        public async Task<IActionResult> DetailPost(Guid? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
         // API lấy thông tin người dùng theo ID
         [HttpGet("users/{id}")]
@@ -103,9 +173,17 @@ namespace GOCAPUI.Controllers
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
                 _logger.LogError(ex, "Error creating user.");
                 return StatusCode(500, $"Lỗi máy chủ nội bộ: {ex.Message}");
             }
+=======
+                PropertyNameCaseInsensitive = true
+            };
+            var jsonResponse = JsonSerializer.Deserialize<PostResponse>(strData, options);
+            IEnumerable<PostModel> a = jsonResponse.Value;
+            return a;
+>>>>>>> 6685573664c01ae968c4e0c0a0dd2ba79759dd18
         }
 
         // API cập nhật thông tin người dùng
