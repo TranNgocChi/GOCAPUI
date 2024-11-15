@@ -1,5 +1,5 @@
 ﻿@model GOCAPUI.Models.DTO.Post.PostModel
-
+@using GOCAPUI.Models.DTO.Post
 @{
     ViewData["Title"] = "DetailPost";
     Layout = "_LayoutAdmin";
@@ -93,9 +93,23 @@
                 <div class="image-gallery">
                     @foreach (var item1 in Model.Medias)
                     {
-                        <div class="col-sm-2">
-                            <img src="@item1.Url" alt="Image" />
-                        </div>
+
+                        @if (item1.Type.Equals("Image"))
+                        {
+                            <div class="col-sm-2">
+                                <img src="@item1.Url" alt="Image" class="img-fluid" />
+                            </div>
+                        }
+                        else if (item1.Type.Equals("Video"))
+                        {
+                            <div class="col-sm-8">
+                                <video controls class="img-fluid">
+                                    <source src="@item1.Url" type="video/mp4" /> <!-- Thay đổi type nếu cần -->
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        }
+
                     }
                 </div>
             </dd>
@@ -109,9 +123,9 @@
             DateTime dateTime = DateTime.FromFileTime(createDay);
             string formattedDate = dateTime.ToString("dd-MM-yyyy");
         }
-    <dd class="col-sm-10">
-        @formattedDate
-    </dd>
+        <dd class="col-sm-10">
+            @formattedDate
+        </dd>
     </dl>
 </div>
 

@@ -6,6 +6,6 @@ namespace GOCAPUI.Models.ResponseJson
     public class PostResponse
     {
         public IEnumerable<PostModel>? Value { get; set; }
-        public int? Count { get; set; }
+       
     }
 }

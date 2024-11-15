@@ -57,10 +57,13 @@ namespace GOCAPUI.Controllers
         }
         public async Task<IActionResult> CreatePost()
         {
-           
+            IEnumerable<UserModel> b = await GetAllUser();
+            ViewBag.UserId = new SelectList(b, "Id", "Name");
             return View();
         }
         [HttpPost]
+        [RequestSizeLimit(104857600)]
+      
         public async Task<IActionResult> CreatePost([Bind("Content,UserId,MediaFiles")] PostCreationModel postCreation)
         {
             if (ModelState.IsValid)
@@ -82,7 +85,27 @@ namespace GOCAPUI.Controllers
                                 var stream = file.OpenReadStream();
                                 var fileContent = new StreamContent(stream);
                                 fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
-                                content.Add(fileContent, "MediaFiles", file.FileName);
+
+                                // Kiểm tra loại tệp
+                                if (file.ContentType.StartsWith("video/"))
+                                {
+                                    // Xử lý tệp video
+                                    content.Add(fileContent, "MediaFiles", file.FileName);
+                                    Console.WriteLine($"Tệp video đã được thêm: {file.FileName}");
+                                }
+                                else if (file.ContentType.StartsWith("image/"))
+                                {
+                                    // Xử lý tệp hình ảnh
+                                    content.Add(fileContent, "MediaFiles", file.FileName);
+                                    Console.WriteLine($"Tệp hình ảnh đã được thêm: {file.FileName}");
+                                }
+                                else
+                                {
+                                    // Nếu loại tệp không phải là video hoặc hình ảnh
+                                    Console.WriteLine($"Loại tệp không hỗ trợ: {file.FileName}");
+                                    ModelState.AddModelError("MediaFiles", "Chỉ hỗ trợ tải lên hình ảnh và video.");
+                                    return View(postCreation); // Hoặc xử lý phù hợp
+                                }
                             }
                         }
                     }
@@ -98,7 +121,7 @@ namespace GOCAPUI.Controllers
 
             return NoContent();
         }
-       
+
         public async Task<IActionResult> DetailPost(Guid? id)
         {
             if (id == null)
@@ -164,7 +187,6 @@ namespace GOCAPUI.Controllers
             };
             var jsonResponse = JsonSerializer.Deserialize<PostResponse>(strData, options);
             IEnumerable<PostModel> a = jsonResponse.Value;
-
             return a;
         }
 

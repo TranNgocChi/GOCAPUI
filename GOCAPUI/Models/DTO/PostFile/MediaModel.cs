@@ -1,4 +1,6 @@
-﻿namespace GOCAPUI.Models.DTO.Post;
+﻿using System.Net.Mime;
+
+namespace GOCAPUI.Models.DTO.Post;
 
 public class MediaModel
 {
